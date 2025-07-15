@@ -34,12 +34,4 @@ public class User {
     @NotNull(groups = CreateValidationGroup.class)
     @PastOrPresent(groups = {CreateValidationGroup.class, UpdateValidationGroup.class})
     LocalDate birthday;
-
-    public User(User oldInstance, User newInstance) {
-        id = oldInstance.id;
-        email = (newInstance.email == null) ? oldInstance.email : newInstance.email;
-        login = (newInstance.login == null) ? oldInstance.login : newInstance.login;
-        name = (newInstance.name == null || newInstance.name.isBlank()) ? newInstance.login : newInstance.name;
-        birthday = (newInstance.birthday == null) ? oldInstance.birthday : newInstance.birthday;
-    }
 }

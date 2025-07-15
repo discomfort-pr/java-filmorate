@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.validationgroup.UpdateValidationGroup;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/users")
@@ -41,8 +42,12 @@ public class UserController {
         }
     }
 
-    private User updateUser(User oldInstance, User newInstance) {
-        return new User(oldInstance, newInstance);
+    private void updateUser(User updated, User newInstance) {
+        updated.setEmail(Objects.requireNonNullElse(newInstance.getEmail(), updated.getEmail()));
+        updated.setLogin(Objects.requireNonNullElse(newInstance.getLogin(), updated.getLogin()));
+        updated.setName(newInstance.getName() == null || newInstance.getName().isBlank() ? newInstance.getLogin()
+                                                                                         : newInstance.getName());
+        updated.setBirthday(Objects.requireNonNullElse(newInstance.getBirthday(), updated.getBirthday()));
     }
 
     @GetMapping
@@ -54,23 +59,28 @@ public class UserController {
     public User create(@Validated(CreateValidationGroup.class) @RequestBody User created) {
         created.setId(getNextId());
         fixUsername(created);
+
         log.debug("Создан пользователь с id {}, email {}, login {}, name {}, birthday {}",
                 created.getId(), created.getEmail(), created.getLogin(), created.getName(), created.getBirthday());
+
         users.put(created.getId(), created);
         return created;
     }
 
     @PutMapping
     public User update(@Validated(UpdateValidationGroup.class) @RequestBody User newInstance) {
-        User oldInstance = findSameIdUser(newInstance);
-        log.debug("Обновление пользователя с id {}, email {}, login {}, name {}, birthday {}",
-                oldInstance.getId(), oldInstance.getEmail(), oldInstance.getLogin(), oldInstance.getName(), oldInstance.getBirthday());
+        User updated = findSameIdUser(newInstance);
 
-        User updated = updateUser(oldInstance, newInstance);
+        log.debug("Обновление пользователя с id {}, email {}, login {}, name {}, birthday {}",
+                updated.getId(), updated.getEmail(), updated.getLogin(), updated.getName(), updated.getBirthday());
+
+        updateUser(updated, newInstance);
+
         log.debug("Обновлены данные пользователя с id {} на email {}, login {}, name {}, birthday {}",
                 updated.getId(), updated.getEmail(), updated.getLogin(),
                 updated.getName(), updated.getBirthday());
-        users.put(newInstance.getId(), updated);
+
+        users.put(updated.getId(), updated);
         return updated;
     }
 }

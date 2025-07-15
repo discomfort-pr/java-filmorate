@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import ru.yandex.practicum.filmorate.annotation.NotBefore;
 import ru.yandex.practicum.filmorate.validationgroup.CreateValidationGroup;
 import ru.yandex.practicum.filmorate.validationgroup.UpdateValidationGroup;
 
@@ -33,17 +34,10 @@ public class Film {
     @Size(max = 200, groups = {CreateValidationGroup.class, UpdateValidationGroup.class})
     String description;
 
+    @NotBefore(value = "28.12.1895", groups = {CreateValidationGroup.class, UpdateValidationGroup.class})
     LocalDate releaseDate;
 
     @NotNull(groups = CreateValidationGroup.class)
     @Positive(groups = {CreateValidationGroup.class, UpdateValidationGroup.class})
     Integer duration;
-
-    public Film(Film oldInstance, Film newInstance) {
-        id = oldInstance.id;
-        name = (newInstance.name == null) ? oldInstance.name : newInstance.name;
-        description = (newInstance.description == null) ? oldInstance.description : newInstance.description;
-        releaseDate = (newInstance.releaseDate == null) ? oldInstance.releaseDate : newInstance.releaseDate;
-        duration = (newInstance.duration == null) ? oldInstance.duration : newInstance.duration;
-    }
 }

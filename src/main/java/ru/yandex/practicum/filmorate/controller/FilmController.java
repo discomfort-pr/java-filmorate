@@ -4,24 +4,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.validationgroup.CreateValidationGroup;
 import ru.yandex.practicum.filmorate.validationgroup.UpdateValidationGroup;
-import ru.yandex.practicum.filmorate.validator.FilmValidator;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/films")
 @Slf4j
 public class FilmController {
 
-    private static final String DEFAULT_ERROR_LOG_MESSAGE = "Валидация данных фильма провалена";
     private final Map<Long, Film> films = new HashMap<>();
-    private final FilmValidator validator = new FilmValidator();
 
     private long getNextId() {
         long maxId = films.keySet()
@@ -39,8 +36,11 @@ public class FilmController {
         return films.get(newInstance.getId());
     }
 
-    private Film updateFilm(Film oldInstance, Film newInstance) {
-        return new Film(oldInstance, newInstance);
+    private void updateFilm(Film updated, Film newInstance) {
+        updated.setName(Objects.requireNonNullElse(newInstance.getName(), updated.getName()));
+        updated.setDescription(Objects.requireNonNullElse(newInstance.getDescription(), updated.getDescription()));
+        updated.setReleaseDate(Objects.requireNonNullElse(newInstance.getReleaseDate(), updated.getReleaseDate()));
+        updated.setDuration(Objects.requireNonNullElse(newInstance.getDuration(), updated.getDuration()));
     }
 
     @GetMapping
@@ -50,13 +50,8 @@ public class FilmController {
 
     @PostMapping
     public Film create(@Validated(CreateValidationGroup.class) @RequestBody Film created) {
-        try {
-            validator.validateForCreating(created);
-        } catch (ValidationException exception) {
-            log.debug(DEFAULT_ERROR_LOG_MESSAGE, exception);
-            throw exception;
-        }
         created.setId(getNextId());
+
         log.debug("Создан фильм с id {}, name {}, description {}, releaseDate {}, duration {}",
                 created.getId(), created.getName(), created.getDescription(),
                 created.getReleaseDate(), created.getDuration());
@@ -67,22 +62,19 @@ public class FilmController {
 
     @PutMapping
     public Film update(@Validated(UpdateValidationGroup.class) @RequestBody Film newInstance) {
-        Film oldInstance = findSameIdFilm(newInstance);
-        try {
-            validator.validateForUpdating(newInstance);
-        } catch (ValidationException exception) {
-            log.error(DEFAULT_ERROR_LOG_MESSAGE, exception);
-            throw exception;
-        }
+        Film updated = findSameIdFilm(newInstance);
 
         log.debug("Обновление фильма с id {}, name {}, description {}, releaseDate {}, duration {}",
-                oldInstance.getId(), oldInstance.getName(), oldInstance.getDescription(),
-                oldInstance.getReleaseDate(), oldInstance.getDuration());
-        Film updated = updateFilm(oldInstance, newInstance);
+                updated.getId(), updated.getName(), updated.getDescription(),
+                updated.getReleaseDate(), updated.getDuration());
+
+        updateFilm(updated, newInstance);
+
         log.debug("Обновлены данные фильма с id {} на name {}, description {}, releaseDate {}, duration {}",
                 updated.getId(), updated.getName(), updated.getDescription(),
                 updated.getReleaseDate(), updated.getDuration());
-        films.put(newInstance.getId(), updated);
+
+        films.put(updated.getId(), updated);
         return updated;
     }
 }
