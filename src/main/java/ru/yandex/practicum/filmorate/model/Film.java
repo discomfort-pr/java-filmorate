@@ -14,6 +14,8 @@ import ru.yandex.practicum.filmorate.validationgroup.CreateValidationGroup;
 import ru.yandex.practicum.filmorate.validationgroup.UpdateValidationGroup;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -40,4 +42,6 @@ public class Film {
     @NotNull(groups = CreateValidationGroup.class)
     @Positive(groups = {CreateValidationGroup.class, UpdateValidationGroup.class})
     Integer duration;
+
+    Set<Long> likes = new HashSet<>();
 }
