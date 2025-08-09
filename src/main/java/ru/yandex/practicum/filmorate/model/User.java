@@ -1,20 +1,22 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.validation.constraints.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
+import ru.yandex.practicum.filmorate.serializer.UserSerializer;
 import ru.yandex.practicum.filmorate.validationgroup.CreateValidationGroup;
 import ru.yandex.practicum.filmorate.validationgroup.UpdateValidationGroup;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonSerialize(using = UserSerializer.class)
 public class User {
 
     @NotNull(groups = UpdateValidationGroup.class)
@@ -34,4 +36,7 @@ public class User {
     @NotNull(groups = CreateValidationGroup.class)
     @PastOrPresent(groups = {CreateValidationGroup.class, UpdateValidationGroup.class})
     LocalDate birthday;
+
+    @EqualsAndHashCode.Exclude
+    Set<User> friends = new HashSet<>();
 }
