@@ -10,18 +10,6 @@ import java.time.format.DateTimeFormatter;
 
 public class UserSerializer extends JsonSerializer<User> {
 
-    private void writeNoFriends(User user, JsonGenerator jsonGenerator, SerializerProvider serializerProvider, boolean end) throws IOException {
-        jsonGenerator.writeStartObject();
-        jsonGenerator.writeNumberField("id", user.getId());
-        jsonGenerator.writeStringField("email", user.getEmail());
-        jsonGenerator.writeStringField("login", user.getLogin());
-        jsonGenerator.writeStringField("name", user.getName());
-        jsonGenerator.writeStringField("birthday", user.getBirthday().format(DateTimeFormatter.ISO_LOCAL_DATE));
-        if (end) {
-            jsonGenerator.writeEndObject();
-        }
-    }
-
     @Override
     public void serialize(User user, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
         writeNoFriends(user, jsonGenerator, serializerProvider, false);
@@ -34,5 +22,17 @@ public class UserSerializer extends JsonSerializer<User> {
 
 
         jsonGenerator.writeEndObject();
+    }
+
+    private void writeNoFriends(User user, JsonGenerator jsonGenerator, SerializerProvider serializerProvider, boolean end) throws IOException {
+        jsonGenerator.writeStartObject();
+        jsonGenerator.writeNumberField("id", user.getId());
+        jsonGenerator.writeStringField("email", user.getEmail());
+        jsonGenerator.writeStringField("login", user.getLogin());
+        jsonGenerator.writeStringField("name", user.getName());
+        jsonGenerator.writeStringField("birthday", user.getBirthday().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        if (end) {
+            jsonGenerator.writeEndObject();
+        }
     }
 }

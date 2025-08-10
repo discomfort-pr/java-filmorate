@@ -16,6 +16,53 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     Map<Long, Film> films = new HashMap<>();
 
+    @Override
+    public Collection<Film> findAll() {
+        return films.values();
+    }
+
+    @Override
+    public Film findFilm(Long filmId) {
+        checkExistence(filmId, "Фильм " + filmId + " не найден");
+        return films.get(filmId);
+    }
+
+    @Override
+    public Film create(Film created) {
+        created.setId(getNextId());
+
+        log.info("Создан фильм с id {}, name {}, description {}, releaseDate {}, duration {}",
+                created.getId(), created.getName(), created.getDescription(),
+                created.getReleaseDate(), created.getDuration());
+
+        films.put(created.getId(), created);
+        return created;
+    }
+
+    @Override
+    public Film update(Film newInstance) {
+        Film updated = findSameIdFilm(newInstance);
+
+        log.info("Обновление фильма с id {}, name {}, description {}, releaseDate {}, duration {}",
+                updated.getId(), updated.getName(), updated.getDescription(),
+                updated.getReleaseDate(), updated.getDuration());
+
+        updateFilm(updated, newInstance);
+
+        log.info("Обновлены данные фильма с id {} на name {}, description {}, releaseDate {}, duration {}",
+                updated.getId(), updated.getName(), updated.getDescription(),
+                updated.getReleaseDate(), updated.getDuration());
+
+        return updated;
+    }
+
+    @Override
+    public void delete(Long filmId) {
+        log.info("Удаление фильма с id {}", filmId);
+
+        films.remove(filmId);
+    }
+
     private long getNextId() {
         long maxId = films.keySet()
                 .stream()
@@ -41,53 +88,5 @@ public class InMemoryFilmStorage implements FilmStorage {
         updated.setDescription(Objects.requireNonNullElse(newInstance.getDescription(), updated.getDescription()));
         updated.setReleaseDate(Objects.requireNonNullElse(newInstance.getReleaseDate(), updated.getReleaseDate()));
         updated.setDuration(Objects.requireNonNullElse(newInstance.getDuration(), updated.getDuration()));
-    }
-
-    @Override
-    public Collection<Film> findAll() {
-        return films.values();
-    }
-
-    @Override
-    public Film findFilm(Long filmId) {
-        checkExistence(filmId, "Фильм " + filmId + " не найден");
-        return films.get(filmId);
-    }
-
-    @Override
-    public Film create(Film created) {
-        created.setId(getNextId());
-
-        log.debug("Создан фильм с id {}, name {}, description {}, releaseDate {}, duration {}",
-                created.getId(), created.getName(), created.getDescription(),
-                created.getReleaseDate(), created.getDuration());
-
-        films.put(created.getId(), created);
-        return created;
-    }
-
-    @Override
-    public Film update(Film newInstance) {
-        Film updated = findSameIdFilm(newInstance);
-
-        log.debug("Обновление фильма с id {}, name {}, description {}, releaseDate {}, duration {}",
-                updated.getId(), updated.getName(), updated.getDescription(),
-                updated.getReleaseDate(), updated.getDuration());
-
-        updateFilm(updated, newInstance);
-
-        log.debug("Обновлены данные фильма с id {} на name {}, description {}, releaseDate {}, duration {}",
-                updated.getId(), updated.getName(), updated.getDescription(),
-                updated.getReleaseDate(), updated.getDuration());
-
-        films.put(updated.getId(), updated);
-        return updated;
-    }
-
-    @Override
-    public void delete(Long filmId) {
-        log.debug("Удаление фильма с id {}", filmId);
-
-        films.remove(filmId);
     }
 }

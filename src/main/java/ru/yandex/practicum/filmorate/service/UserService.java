@@ -26,7 +26,7 @@ public class UserService {
         user1.getFriends().add(user2);
         user2.getFriends().add(user1);
 
-        log.debug("Пользователь {} добавил в друзья {}", applicant, friend);
+        log.info("Пользователь {} добавил в друзья {}", applicant, friend);
 
         return user1;
     }
@@ -38,7 +38,7 @@ public class UserService {
         user1.getFriends().remove(user2);
         user2.getFriends().remove(user1);
 
-        log.debug("Пользователь {} удалил из друзей {}", applicant, friend);
+        log.info("Пользователь {} удалил из друзей {}", applicant, friend);
 
         return user1;
     }
@@ -52,7 +52,7 @@ public class UserService {
         generalSet.addAll(friendSet1);
         generalSet.addAll(friendSet2);
 
-        return new HashSet<>(generalSet)
+        return generalSet
                 .stream()
                 .filter(user -> friendSet1.contains(user) && friendSet2.contains(user))
                 .collect(Collectors.toSet());

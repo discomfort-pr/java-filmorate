@@ -28,7 +28,7 @@ public class FilmService {
         Film film = filmStorage.findFilm(filmId);
         film.getLikes().add(userId);
 
-        log.debug("Пользователь {} ставит лайк фильму {}", userId, filmId);
+        log.info("Пользователь {} ставит лайк фильму {}", userId, filmId);
 
         return film;
     }
@@ -39,7 +39,7 @@ public class FilmService {
         Film film = filmStorage.findFilm(filmId);
         film.getLikes().remove(userId);
 
-        log.debug("Пользователь {} убирает лайк с фильма {}", userId, filmId);
+        log.info("Пользователь {} убирает лайк с фильма {}", userId, filmId);
 
         return film;
     }
