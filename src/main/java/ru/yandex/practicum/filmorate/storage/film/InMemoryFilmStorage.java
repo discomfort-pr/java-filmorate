@@ -1,92 +1,116 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.film.entity.Film;
+import ru.yandex.practicum.filmorate.model.film.entity.FilmDto;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.util.film.FilmMapper;
 
 import java.util.*;
 
-@Component
+@Repository
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@RequiredArgsConstructor
 @Slf4j
 public class InMemoryFilmStorage implements FilmStorage {
 
-    Map<Long, Film> films = new HashMap<>();
+    Map<Integer, Film> films = new HashMap<>();
+
+    FilmMapper mapper;
+    UserStorage userStorage;
 
     @Override
-    public Collection<Film> findAll() {
-        return films.values();
+    public List<Film> findAll() {
+        return new ArrayList<>(films.values());
     }
 
     @Override
-    public Film findFilm(Long filmId) {
+    public Film findOne(Integer filmId) {
         checkExistence(filmId, "Фильм " + filmId + " не найден");
         return films.get(filmId);
     }
 
     @Override
-    public Film create(Film created) {
-        created.setId(getNextId());
+    public Film create(FilmDto filmData) {
+        filmData.setId(getNextId());
 
-        log.info("Создан фильм с id {}, name {}, description {}, releaseDate {}, duration {}",
-                created.getId(), created.getName(), created.getDescription(),
-                created.getReleaseDate(), created.getDuration());
+        Film entity = mapper.mapToEntity(filmData);
+        films.put(filmData.getId(), entity);
 
-        films.put(created.getId(), created);
-        return created;
+        log.info("Создан фильм с id {}, name {}, description {}, releaseDate {}, duration {}, mpa {}",
+                filmData.getId(), filmData.getName(), filmData.getDescription(),
+                filmData.getReleaseDate(), filmData.getDuration(), filmData.getMpa());
+
+        return entity;
     }
 
     @Override
-    public Film update(Film newInstance) {
-        Film updated = findSameIdFilm(newInstance);
+    public Film update(FilmDto filmData) {
+        Film updated = findOne(filmData.getId());
 
-        log.info("Обновление фильма с id {}, name {}, description {}, releaseDate {}, duration {}",
+        log.info("Обновление фильма с id {}, name {}, description {}, releaseDate {}, duration {}, mpa {}, genres {}",
                 updated.getId(), updated.getName(), updated.getDescription(),
-                updated.getReleaseDate(), updated.getDuration());
+                updated.getReleaseDate(), updated.getDuration(), updated.getMpa(), updated.getGenres());
 
-        updateFilm(updated, newInstance);
+        updateFilmData(updated, filmData);
 
-        log.info("Обновлены данные фильма с id {} на name {}, description {}, releaseDate {}, duration {}",
+        log.info("Обновлены данные фильма с id {} на name {}, description {}, releaseDate {}, duration {}, mpa {}, genres {}",
                 updated.getId(), updated.getName(), updated.getDescription(),
-                updated.getReleaseDate(), updated.getDuration());
+                updated.getReleaseDate(), updated.getDuration(), updated.getMpa(), updated.getGenres());
 
         return updated;
     }
 
     @Override
-    public void delete(Long filmId) {
-        log.info("Удаление фильма с id {}", filmId);
+    public Film addLike(Integer filmId, Integer userId) {
+        Film liked = findOne(filmId);
+        userStorage.findOne(userId);
 
-        films.remove(filmId);
+        liked.getLikes().add(userId);
+
+        log.info("Пользователь {} ставит лайк фильму {}", userId, filmId);
+
+        return liked;
     }
 
-    private long getNextId() {
-        long maxId = films.keySet()
+    @Override
+    public Film removeLike(Integer filmId, Integer userId) {
+        Film liked = findOne(filmId);
+        userStorage.findOne(userId);
+
+        liked.getLikes().remove(userId);
+
+        log.info("Пользователь {} удаляет лайк с фильма {}", userId, filmId);
+
+        return liked;
+    }
+
+    private Integer getNextId() {
+        Integer maxId = films.keySet()
                 .stream()
-                .max(Long::compareTo)
-                .orElse(0L);
+                .max(Integer::compareTo)
+                .orElse(0);
 
         return ++maxId;
     }
 
-    private void checkExistence(Long filmId, String message) {
+    private void checkExistence(Integer filmId, String message) {
         if (!films.containsKey(filmId)) {
             throw new FilmNotFoundException(message);
         }
     }
 
-    private Film findSameIdFilm(Film newInstance) {
-        checkExistence(newInstance.getId(), "Обновляемый фильм не найден");
-        return films.get(newInstance.getId());
-    }
-
-    private void updateFilm(Film updated, Film newInstance) {
-        updated.setName(Objects.requireNonNullElse(newInstance.getName(), updated.getName()));
-        updated.setDescription(Objects.requireNonNullElse(newInstance.getDescription(), updated.getDescription()));
-        updated.setReleaseDate(Objects.requireNonNullElse(newInstance.getReleaseDate(), updated.getReleaseDate()));
-        updated.setDuration(Objects.requireNonNullElse(newInstance.getDuration(), updated.getDuration()));
+    private void updateFilmData(Film updated, FilmDto filmData) {
+        updated.setName(Objects.requireNonNullElse(filmData.getName(), updated.getName()));
+        updated.setDescription(Objects.requireNonNullElse(filmData.getDescription(), updated.getDescription()));
+        updated.setReleaseDate(Objects.requireNonNullElse(filmData.getReleaseDate(), updated.getReleaseDate()));
+        updated.setDuration(Objects.requireNonNullElse(filmData.getDuration(), updated.getDuration()));
+        updated.setMpa(Objects.requireNonNullElse(filmData.getMpa(), updated.getMpa()));
+        updated.setGenres(Objects.requireNonNullElse(filmData.getGenres(), updated.getGenres()));
     }
 }

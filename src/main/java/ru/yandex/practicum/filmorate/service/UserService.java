@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.user.entity.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.*;
@@ -17,44 +17,28 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UserService {
 
-    private UserStorage storage;
+    UserStorage storage;
 
-    public User addFriend(Long applicant, Long friend) {
-        User user1 = storage.findUser(applicant);
-        User user2 = storage.findUser(friend);
-
-        user1.getFriends().add(user2);
-        user2.getFriends().add(user1);
-
-        log.info("Пользователь {} добавил в друзья {}", applicant, friend);
-
-        return user1;
+    public User addFriend(Integer applicant, Integer friend) {
+        return storage.addFriend(applicant, friend);
     }
 
-    public User removeFriend(Long applicant, Long friend) {
-        User user1 = storage.findUser(applicant);
-        User user2 = storage.findUser(friend);
-
-        user1.getFriends().remove(user2);
-        user2.getFriends().remove(user1);
-
-        log.info("Пользователь {} удалил из друзей {}", applicant, friend);
-
-        return user1;
+    public User removeFriend(Integer applicant, Integer friend) {
+        return storage.removeFriend(applicant, friend);
     }
 
-    public Set<User> getMutualFriends(Long applicant, Long other) {
-        Set<User> friendSet1 = storage.findUser(applicant).getFriends();
-        Set<User> friendSet2 = storage.findUser(other).getFriends();
+    public Set<Integer> getMutualFriends(Integer applicant, Integer other) {
+        Set<Integer> friendSet1 = storage.findOne(applicant).getFriends();
+        Set<Integer> friendSet2 = storage.findOne(other).getFriends();
 
-        Set<User> generalSet = new HashSet<>();
+        Set<Integer> generalSet = new HashSet<>();
 
         generalSet.addAll(friendSet1);
         generalSet.addAll(friendSet2);
 
         return generalSet
                 .stream()
-                .filter(user -> friendSet1.contains(user) && friendSet2.contains(user))
+                .filter(userId -> friendSet1.contains(userId) && friendSet2.contains(userId))
                 .collect(Collectors.toSet());
     }
 }

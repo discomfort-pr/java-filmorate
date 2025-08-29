@@ -5,7 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.user.entity.User;
+import ru.yandex.practicum.filmorate.model.user.entity.UserDto;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.validationgroup.CreateValidationGroup;
@@ -29,32 +30,32 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@Validated(CreateValidationGroup.class) @RequestBody User created) {
+    public User create(@Validated(CreateValidationGroup.class) @RequestBody UserDto created) {
         return userStorage.create(created);
     }
 
     @PutMapping
-    public User update(@Validated(UpdateValidationGroup.class) @RequestBody User newInstance) {
+    public User update(@Validated(UpdateValidationGroup.class) @RequestBody UserDto newInstance) {
         return userStorage.update(newInstance);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public User addFriend(@PathVariable("id") Long applicant, @PathVariable("friendId") Long friend) {
+    public User addFriend(@PathVariable("id") Integer applicant, @PathVariable("friendId") Integer friend) {
         return userService.addFriend(applicant, friend);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public User removeFriend(@PathVariable("id") Long applicant, @PathVariable("friendId") Long friend) {
+    public User removeFriend(@PathVariable("id") Integer applicant, @PathVariable("friendId") Integer friend) {
         return userService.removeFriend(applicant, friend);
     }
 
     @GetMapping("/{id}/friends")
-    public Set<User> getFriends(@PathVariable("id") Long userId) {
-        return userStorage.findUser(userId).getFriends();
+    public Set<Integer> getFriends(@PathVariable("id") Integer userId) {
+        return userStorage.findOne(userId).getFriends();
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Set<User> getMutualFriends(@PathVariable("id") Long applicant, @PathVariable("otherId") Long other) {
+    public Set<Integer> getMutualFriends(@PathVariable("id") Integer applicant, @PathVariable("otherId") Integer other) {
         return userService.getMutualFriends(applicant, other);
     }
 }

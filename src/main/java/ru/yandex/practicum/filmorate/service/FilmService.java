@@ -5,9 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.film.entity.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Comparator;
 import java.util.List;
@@ -20,28 +19,12 @@ public class FilmService {
 
     FilmStorage filmStorage;
 
-    UserStorage userStorage;
-
-    public Film addLike(Long filmId, Long userId) {
-        userStorage.findUser(userId);
-
-        Film film = filmStorage.findFilm(filmId);
-        film.getLikes().add(userId);
-
-        log.info("Пользователь {} ставит лайк фильму {}", userId, filmId);
-
-        return film;
+    public Film addLike(Integer filmId, Integer userId) {
+        return filmStorage.addLike(filmId, userId);
     }
 
-    public Film removeLike(Long filmId, Long userId) {
-        userStorage.findUser(userId);
-
-        Film film = filmStorage.findFilm(filmId);
-        film.getLikes().remove(userId);
-
-        log.info("Пользователь {} убирает лайк с фильма {}", userId, filmId);
-
-        return film;
+    public Film removeLike(Integer filmId, Integer userId) {
+        return filmStorage.removeLike(filmId, userId);
     }
 
     public List<Film> getMostLiked(int count) {
