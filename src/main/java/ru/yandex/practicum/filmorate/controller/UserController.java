@@ -50,12 +50,12 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public Set<Integer> getFriends(@PathVariable("id") Integer userId) {
+    public Set<UserDto> getFriends(@PathVariable("id") Integer userId) {
         return userStorage.findOne(userId).getFriends();
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Set<Integer> getMutualFriends(@PathVariable("id") Integer applicant, @PathVariable("otherId") Integer other) {
+    public Set<UserDto> getMutualFriends(@PathVariable("id") Integer applicant, @PathVariable("otherId") Integer other) {
         return userService.getMutualFriends(applicant, other);
     }
 }

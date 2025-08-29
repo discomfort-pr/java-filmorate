@@ -19,4 +19,14 @@ public class UserMapper {
                 .friends(new HashSet<>())
                 .build();
     }
+
+    public UserDto mapToDto(User user) {
+        return UserDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .login(user.getLogin())
+                .name(user.getName())
+                .birthday(user.getBirthday())
+                .build();
+    }
 }

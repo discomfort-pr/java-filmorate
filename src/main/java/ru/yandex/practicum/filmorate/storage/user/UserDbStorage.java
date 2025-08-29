@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.user.entity.User;
 import ru.yandex.practicum.filmorate.model.user.entity.UserDto;
 import ru.yandex.practicum.filmorate.util.user.UserFieldScanner;
+import ru.yandex.practicum.filmorate.util.user.UserMapper;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -21,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Repository
 @AllArgsConstructor
@@ -32,6 +34,7 @@ public class UserDbStorage implements UserStorage {
     List<String> updatableFields = List.of("email", "login", "name", "birthday");
 
     JdbcTemplate jdbc;
+    UserMapper mapper;
     UserRowMapper rowMapper;
     UserFieldScanner fieldScanner;
 
@@ -106,9 +109,11 @@ public class UserDbStorage implements UserStorage {
         }
     }
 
-    private Set<Integer> getFriends(Integer userId) {
+    private Set<UserDto> getFriends(Integer userId) {
         String sql = "SELECT friend_id FROM friendships WHERE user_id = ?";
-        return new HashSet<>(jdbc.queryForList(sql, Integer.class, userId));
+        return new HashSet<>(jdbc.queryForList(sql, Integer.class, userId)).stream()
+                .map(id -> mapper.mapToDto(findOne(id)))
+                .collect(Collectors.toSet());
     }
 
     private void fillUsername(UserDto userData) {

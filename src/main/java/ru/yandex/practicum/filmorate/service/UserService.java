@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.user.entity.User;
+import ru.yandex.practicum.filmorate.model.user.entity.UserDto;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.*;
@@ -27,18 +28,18 @@ public class UserService {
         return storage.removeFriend(applicant, friend);
     }
 
-    public Set<Integer> getMutualFriends(Integer applicant, Integer other) {
-        Set<Integer> friendSet1 = storage.findOne(applicant).getFriends();
-        Set<Integer> friendSet2 = storage.findOne(other).getFriends();
+    public Set<UserDto> getMutualFriends(Integer applicant, Integer other) {
+        Set<UserDto> friendSet1 = storage.findOne(applicant).getFriends();
+        Set<UserDto> friendSet2 = storage.findOne(other).getFriends();
 
-        Set<Integer> generalSet = new HashSet<>();
+        Set<UserDto> generalSet = new HashSet<>();
 
         generalSet.addAll(friendSet1);
         generalSet.addAll(friendSet2);
 
         return generalSet
                 .stream()
-                .filter(userId -> friendSet1.contains(userId) && friendSet2.contains(userId))
+                .filter(user -> friendSet1.contains(user) && friendSet2.contains(user))
                 .collect(Collectors.toSet());
     }
 }

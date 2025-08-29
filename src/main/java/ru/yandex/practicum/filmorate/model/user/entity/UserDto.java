@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model.user.entity;
 
 import jakarta.validation.constraints.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.filmorate.validationgroup.CreateValidationGroup;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Builder
 public class UserDto {
 
     @NotNull(groups = UpdateValidationGroup.class)

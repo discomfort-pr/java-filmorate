@@ -70,7 +70,7 @@ public class InMemoryUserStorage implements UserStorage {
         User user = findOne(userId);
         findOne(friendId);
 
-        user.getFriends().add(friendId);
+        user.getFriends().add(mapper.mapToDto(findOne(friendId)));
 
         log.info("Пользователь {} добавил в друзья {}", userId, friendId);
 
@@ -82,7 +82,7 @@ public class InMemoryUserStorage implements UserStorage {
         User user = findOne(userId);
         findOne(friendId);
 
-        user.getFriends().remove(friendId);
+        user.getFriends().remove(mapper.mapToDto(findOne(friendId)));
 
         log.info("Пользователь {} удалил из друзей {}", userId, friendId);
 
