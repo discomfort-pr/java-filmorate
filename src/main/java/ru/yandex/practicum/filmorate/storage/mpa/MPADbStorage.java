@@ -16,18 +16,19 @@ import java.util.List;
 @AllArgsConstructor
 public class MPADbStorage {
 
+    String getAllRatingsQuery = "SELECT * FROM mpa";
+    String getRatingByIdQuery = "SELECT * FROM mpa WHERE id = ?";
+
     JdbcTemplate jdbc;
     MPARowMapper rowMapper;
 
     public List<MPARating> findAll() {
-        String sql = "SELECT * FROM mpa";
-        return jdbc.query(sql, rowMapper);
+        return jdbc.query(getAllRatingsQuery, rowMapper);
     }
 
     public MPARating findOne(Integer ratingId) {
-        String sql = "SELECT * FROM mpa WHERE id = ?";
         try {
-            return jdbc.queryForObject(sql, rowMapper, ratingId);
+            return jdbc.queryForObject(getRatingByIdQuery, rowMapper, ratingId);
         } catch (EmptyResultDataAccessException exception) {
             throw new RatingNotFoundException("Рейтинг " + ratingId + " не найден");
         }

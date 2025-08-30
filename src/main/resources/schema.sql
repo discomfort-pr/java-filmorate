@@ -24,7 +24,8 @@ CREATE TABLE users (
 
 CREATE TABLE film_likes (
     film_id INTEGER REFERENCES films(id),
-    user_id INTEGER REFERENCES users(id)
+    user_id INTEGER REFERENCES users(id),
+    PRIMARY KEY (film_id, user_id)
 );
 
 CREATE TABLE genres (
@@ -34,10 +35,12 @@ CREATE TABLE genres (
 
 CREATE TABLE film_genres (
     film_id INTEGER REFERENCES films(id),
-    genre_id INTEGER REFERENCES genres(id)
+    genre_id INTEGER REFERENCES genres(id),
+    PRIMARY KEY (film_id, genre_id)
 );
 
 CREATE TABLE friendships (
     user_id INTEGER REFERENCES users(id),
-    friend_id INTEGER REFERENCES users(id)
+    friend_id INTEGER REFERENCES users(id),
+    PRIMARY KEY (user_id, friend_id)
 );

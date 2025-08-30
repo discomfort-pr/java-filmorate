@@ -9,8 +9,8 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.filmorate.annotation.NotBefore;
 import ru.yandex.practicum.filmorate.annotation.TablePresent;
-import ru.yandex.practicum.filmorate.model.film.fields.Genre;
-import ru.yandex.practicum.filmorate.model.film.fields.MPARating;
+import ru.yandex.practicum.filmorate.model.film.fields.GenreDto;
+import ru.yandex.practicum.filmorate.model.film.fields.MPARatingDto;
 import ru.yandex.practicum.filmorate.validationgroup.CreateValidationGroup;
 import ru.yandex.practicum.filmorate.validationgroup.UpdateValidationGroup;
 
@@ -41,8 +41,8 @@ public class FilmDto {
     Integer duration;
 
     @TablePresent(groups = {CreateValidationGroup.class, UpdateValidationGroup.class})
-    MPARating mpa;
+    MPARatingDto mpa;
 
     @TablePresent(groups = {CreateValidationGroup.class, UpdateValidationGroup.class})
-    Set<Genre> genres;
+    Set<GenreDto> genres;
 }

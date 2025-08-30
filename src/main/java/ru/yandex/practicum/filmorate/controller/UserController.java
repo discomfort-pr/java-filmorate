@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.user.entity.User;
 import ru.yandex.practicum.filmorate.model.user.entity.UserDto;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.validationgroup.CreateValidationGroup;
 import ru.yandex.practicum.filmorate.validationgroup.UpdateValidationGroup;
 
@@ -21,22 +20,21 @@ import java.util.Set;
 @AllArgsConstructor
 public class UserController {
 
-    UserStorage userStorage;
     UserService userService;
 
     @GetMapping
     public Collection<User> findAll() {
-        return userStorage.findAll();
+        return userService.findAll();
     }
 
     @PostMapping
     public User create(@Validated(CreateValidationGroup.class) @RequestBody UserDto created) {
-        return userStorage.create(created);
+        return userService.create(created);
     }
 
     @PutMapping
     public User update(@Validated(UpdateValidationGroup.class) @RequestBody UserDto newInstance) {
-        return userStorage.update(newInstance);
+        return userService.update(newInstance);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
@@ -51,7 +49,7 @@ public class UserController {
 
     @GetMapping("/{id}/friends")
     public Set<UserDto> getFriends(@PathVariable("id") Integer userId) {
-        return userStorage.findOne(userId).getFriends();
+        return userService.getFriends(userId);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")

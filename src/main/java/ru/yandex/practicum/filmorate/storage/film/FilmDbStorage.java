@@ -14,7 +14,8 @@ import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.model.film.entity.Film;
 import ru.yandex.practicum.filmorate.model.film.entity.FilmDto;
 import ru.yandex.practicum.filmorate.model.film.fields.Genre;
-import ru.yandex.practicum.filmorate.model.film.fields.MPARating;
+import ru.yandex.practicum.filmorate.model.film.fields.GenreDto;
+import ru.yandex.practicum.filmorate.model.film.fields.MPARatingDto;
 import ru.yandex.practicum.filmorate.storage.genre.GenreRowMapper;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.util.film.FilmFieldScanner;
@@ -40,6 +41,21 @@ public class FilmDbStorage implements FilmStorage {
             "duration", "duration",
             "mpa", "mpa_rating_id"
     );
+
+    String insertFilmLikeQuery = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
+    String deleteFilmLikeQuery = "DELETE FROM film_likes WHERE film_id = ? AND user_id = ?";
+    String getFilmsIdQuery = "SELECT id FROM films ORDER BY id";
+    String getFilmByIdQuery = "SELECT * FROM films WHERE id = ?";
+    String getGenresIdByFilmIdQuery = "SELECT genre_id FROM film_genres WHERE film_id = ?";
+    String getGenreByIdQuery = "SELECT * FROM genres WHERE id = ?";
+    String getLikesByFilmIdQuery = "SELECT user_id FROM film_likes WHERE film_id = ?";
+    String insertFilmQuery = "INSERT INTO films (name, description, release_date, duration, mpa_rating_id) " +
+                             "VALUES (?, ?, ?, ?, ?)";
+    String insertFilmGenresQuery = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
+    String updateFilmQueryTemplate = "UPDATE films SET %s = ? WHERE id = ?";
+    String deleteFilmGenresQuery = "DELETE FROM film_genres WHERE film_id = ?";
+    String getMostLikedFilmsQuery = "SELECT f.*, (SELECT COUNT(*) FROM film_likes fl WHERE fl.film_id = f.id) " +
+                                    "AS likes_count FROM films f ORDER BY likes_count DESC LIMIT ?";
 
     JdbcTemplate jdbc;
     FilmRowMapper rowMapper;
@@ -84,7 +100,7 @@ public class FilmDbStorage implements FilmStorage {
         updateFilm(updatedFields, filmId);
         dropGenres(filmId);
         if (updatedFields.containsKey("genres")) {
-            insertGenres((Set<Genre>) updatedFields.get("genres"), filmId);
+            insertGenres((Set<GenreDto>) updatedFields.get("genres"), filmId);
         }
 
         log.info("Обновление фильма {}", filmId);
@@ -97,8 +113,7 @@ public class FilmDbStorage implements FilmStorage {
         findOne(filmId);
         userStorage.findOne(userId); // проверка на существование
 
-        String sql = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
-        jdbc.update(sql, filmId, userId);
+        jdbc.update(insertFilmLikeQuery, filmId, userId);
 
         log.info("Пользователь {} ставит лайк фильму {}", userId, filmId);
 
@@ -110,54 +125,51 @@ public class FilmDbStorage implements FilmStorage {
         findOne(filmId);
         userStorage.findOne(userId); // проверка на существование
 
-        String sql = "DELETE FROM film_likes WHERE film_id = ? AND user_id = ?";
-        jdbc.update(sql, filmId, userId);
+        jdbc.update(deleteFilmLikeQuery, filmId, userId);
 
         log.info("Пользователь {} удаляет лайк с фильма {}", userId, filmId);
 
         return findOne(filmId);
     }
 
+    @Override
+    public List<Film> getMostLiked(Integer count) {
+        return jdbc.query(getMostLikedFilmsQuery, rowMapper, count);
+    }
+
     private List<Integer> getFilmsId() {
-        String sql = "SELECT id FROM films ORDER BY id";
-        return jdbc.queryForList(sql, Integer.class);
+        return jdbc.queryForList(getFilmsIdQuery, Integer.class);
     }
 
     private Film getFilm(Integer filmId) {
-        String sql = "SELECT * FROM films WHERE id = ?";
         try {
-            return jdbc.queryForObject(sql, rowMapper, filmId);
+            return jdbc.queryForObject(getFilmByIdQuery, rowMapper, filmId);
         } catch (EmptyResultDataAccessException exception) {
             throw new FilmNotFoundException("Фильм " + filmId + " не найден");
         }
     }
 
     private Set<Genre> getGenres(Integer filmId) {
-        String sql = "SELECT genre_id FROM film_genres WHERE film_id = ?";
-        List<Integer> genresId = jdbc.queryForList(sql, Integer.class, filmId);
+        List<Integer> genresId = jdbc.queryForList(getGenresIdByFilmIdQuery, Integer.class, filmId);
 
         Set<Genre> sortedGenres = new TreeSet<>(Comparator.comparingInt(Genre::getId));
         GenreRowMapper genreRowMapper = new GenreRowMapper();
         for (Integer genreId : genresId) {
-            sql = "SELECT * FROM genres WHERE id = ?";
-            sortedGenres.add(jdbc.queryForObject(sql, genreRowMapper, genreId));
+            sortedGenres.add(jdbc.queryForObject(getGenreByIdQuery, genreRowMapper, genreId));
         }
 
         return sortedGenres;
     }
 
     private Set<Integer> getLikes(Integer filmId) {
-        String sql = "SELECT user_id FROM film_likes WHERE film_id = ?";
-        return new HashSet<>(jdbc.queryForList(sql, Integer.class, filmId));
+        return new HashSet<>(jdbc.queryForList(getLikesByFilmIdQuery, Integer.class, filmId));
     }
 
     private Integer insertFilm(FilmDto filmData) {
-        String sql = "INSERT INTO films (name, description, release_date, duration, mpa_rating_id) " +
-                     "VALUES (?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbc.update(connection -> {
-            PreparedStatement stmt = connection.prepareStatement(sql, new String[]{"id"});
+            PreparedStatement stmt = connection.prepareStatement(insertFilmQuery, new String[]{"id"});
             stmt.setString(1, filmData.getName());
             stmt.setString(2, filmData.getDescription());
             stmt.setDate(3, Date.valueOf(filmData.getReleaseDate()));
@@ -169,34 +181,32 @@ public class FilmDbStorage implements FilmStorage {
         return keyHolder.getKey().intValue();
     }
 
-    private void insertGenres(Set<Genre> genres, Integer filmId) {
-        String sql = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
-        for (Genre genre : genres) {
-            jdbc.update(sql, filmId, genre.getId());
+    private void insertGenres(Set<GenreDto> genres, Integer filmId) {
+        for (GenreDto genre : genres) {
+            jdbc.update(insertFilmGenresQuery, filmId, genre.getId());
         }
     }
 
     private void updateFilm(Map<String, Object> updatedFields, Integer filmId) {
         for (String fieldName : updatableFields) {
             if (updatedFields.containsKey(fieldName)) {
-                String sql = "UPDATE films SET ";
-                sql += classFieldToTableFieldMappings.get(fieldName) + " = ? WHERE id = ?";
-
                 Object value;
                 if (fieldName.equals("mpa")) {
-                    MPARating rating = (MPARating) updatedFields.get(fieldName);
+                    MPARatingDto rating = (MPARatingDto) updatedFields.get(fieldName);
                     value = rating.getId();
                 } else {
                     value = updatedFields.get(fieldName);
                 }
 
-                jdbc.update(sql, value, filmId);
+                jdbc.update(
+                        String.format(updateFilmQueryTemplate, classFieldToTableFieldMappings.get(fieldName)),
+                        value, filmId
+                );
             }
         }
     }
 
     private void dropGenres(Integer filmId) {
-        String sql = "DELETE FROM film_genres WHERE film_id = ?";
-        jdbc.update(sql, filmId);
+        jdbc.update(deleteFilmGenresQuery, filmId);
     }
 }

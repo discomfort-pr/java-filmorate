@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.film.entity.Film;
 import ru.yandex.practicum.filmorate.model.film.entity.FilmDto;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.validationgroup.CreateValidationGroup;
 import ru.yandex.practicum.filmorate.validationgroup.UpdateValidationGroup;
 
@@ -21,27 +20,26 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class FilmController {
 
-    FilmStorage filmStorage;
     FilmService filmService;
 
     @GetMapping
     public Collection<Film> findAll() {
-        return filmStorage.findAll();
+        return filmService.findAll();
     }
 
     @GetMapping("/{filmId}")
     public Film findOne(@PathVariable Integer filmId) {
-        return filmStorage.findOne(filmId);
+        return filmService.findOne(filmId);
     }
 
     @PostMapping
     public Film create(@Validated(CreateValidationGroup.class) @RequestBody FilmDto created) {
-        return filmStorage.create(created);
+        return filmService.create(created);
     }
 
     @PutMapping
     public Film update(@Validated(UpdateValidationGroup.class) @RequestBody FilmDto newInstance) {
-        return filmStorage.update(newInstance);
+        return filmService.update(newInstance);
     }
 
     @PutMapping("/{id}/like/{userId}")

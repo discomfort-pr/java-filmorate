@@ -4,6 +4,7 @@ import ru.yandex.practicum.filmorate.model.user.entity.User;
 import ru.yandex.practicum.filmorate.model.user.entity.UserDto;
 
 import java.util.List;
+import java.util.Set;
 
 public interface UserStorage {
 
@@ -18,4 +19,6 @@ public interface UserStorage {
     User addFriend(Integer userId, Integer friendId);
 
     User removeFriend(Integer userId, Integer friendId);
+
+    Set<UserDto> getCommonFriends(Integer userId, Integer friendId);
 }

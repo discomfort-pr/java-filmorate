@@ -17,6 +17,8 @@ import java.sql.SQLException;
 @AllArgsConstructor
 public class FilmRowMapper implements RowMapper<Film> {
 
+    String getRatingsByIdQuery = "SELECT * FROM mpa WHERE id = ?";
+
     JdbcTemplate jdbc;
     MPARowMapper rowMapper;
 
@@ -28,9 +30,7 @@ public class FilmRowMapper implements RowMapper<Film> {
                 .description(rs.getString("description"))
                 .releaseDate(rs.getDate("release_date").toLocalDate())
                 .duration(rs.getInt("duration"))
-                .mpa(jdbc.queryForObject(
-                        "SELECT * FROM mpa WHERE id = ?", rowMapper, rs.getInt("mpa_rating_id")
-                ))
+                .mpa(jdbc.queryForObject(getRatingsByIdQuery, rowMapper, rs.getInt("mpa_rating_id")))
                 .build();
     }
 }

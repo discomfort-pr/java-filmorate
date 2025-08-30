@@ -16,18 +16,19 @@ import java.util.List;
 @AllArgsConstructor
 public class GenreDbStorage {
 
+    String getAllGenresQuery = "SELECT * FROM genres";
+    String getGenreByIdQuery = "SELECT * FROM genres WHERE id = ?";
+
     JdbcTemplate jdbc;
     GenreRowMapper rowMapper;
 
     public List<Genre> findAll() {
-        String sql = "SELECT * FROM genres";
-        return jdbc.query(sql, rowMapper);
+        return jdbc.query(getAllGenresQuery, rowMapper);
     }
 
     public Genre findOne(Integer genreId) {
-        String sql = "SELECT * FROM genres WHERE id = ?";
         try {
-            return jdbc.queryForObject(sql, rowMapper, genreId);
+            return jdbc.queryForObject(getGenreByIdQuery, rowMapper, genreId);
         } catch (EmptyResultDataAccessException exception) {
             throw new GenreNotFoundException("Жанр " + genreId + " не найден");
         }

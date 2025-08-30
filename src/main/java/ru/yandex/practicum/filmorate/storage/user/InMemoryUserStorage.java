@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.user.entity.UserDto;
 import ru.yandex.practicum.filmorate.util.user.UserMapper;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -87,6 +88,20 @@ public class InMemoryUserStorage implements UserStorage {
         log.info("Пользователь {} удалил из друзей {}", userId, friendId);
 
         return user;
+    }
+
+    @Override
+    public Set<UserDto> getCommonFriends(Integer userId, Integer friendId) {
+        Set<UserDto> friendSet1 = findOne(userId).getFriends();
+        Set<UserDto> friendSet2 = findOne(friendId).getFriends();
+
+        Set<UserDto> generalSet = new HashSet<>();
+        generalSet.addAll(friendSet1);
+        generalSet.addAll(friendSet2);
+
+        return generalSet.stream()
+                .filter(user -> friendSet1.contains(user) && friendSet2.contains(user))
+                .collect(Collectors.toSet());
     }
 
     private Integer getNextId() {

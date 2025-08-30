@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.model.user.entity.UserDto;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -20,6 +19,18 @@ public class UserService {
 
     UserStorage storage;
 
+    public List<User> findAll() {
+        return storage.findAll();
+    }
+
+    public User create(UserDto userData) {
+        return storage.create(userData);
+    }
+
+    public User update(UserDto userData) {
+        return storage.update(userData);
+    }
+
     public User addFriend(Integer applicant, Integer friend) {
         return storage.addFriend(applicant, friend);
     }
@@ -28,18 +39,11 @@ public class UserService {
         return storage.removeFriend(applicant, friend);
     }
 
+    public Set<UserDto> getFriends(Integer userId) {
+        return storage.findOne(userId).getFriends();
+    }
+
     public Set<UserDto> getMutualFriends(Integer applicant, Integer other) {
-        Set<UserDto> friendSet1 = storage.findOne(applicant).getFriends();
-        Set<UserDto> friendSet2 = storage.findOne(other).getFriends();
-
-        Set<UserDto> generalSet = new HashSet<>();
-
-        generalSet.addAll(friendSet1);
-        generalSet.addAll(friendSet2);
-
-        return generalSet
-                .stream()
-                .filter(user -> friendSet1.contains(user) && friendSet2.contains(user))
-                .collect(Collectors.toSet());
+        return storage.getCommonFriends(applicant, other);
     }
 }

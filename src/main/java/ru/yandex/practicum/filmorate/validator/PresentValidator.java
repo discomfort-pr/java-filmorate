@@ -7,8 +7,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.annotation.TablePresent;
-import ru.yandex.practicum.filmorate.model.film.fields.Genre;
-import ru.yandex.practicum.filmorate.model.film.fields.MPARating;
+import ru.yandex.practicum.filmorate.model.film.fields.GenreDto;
+import ru.yandex.practicum.filmorate.model.film.fields.MPARatingDto;
 
 import java.util.List;
 import java.util.Set;
@@ -18,6 +18,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PresentValidator implements ConstraintValidator<TablePresent, Object> {
 
+    String getGenresIdQuery = "SELECT id FROM genres";
+    String getRatingsIdQuery = "SELECT id FROM mpa";
+
     JdbcTemplate jdbc;
 
     @Override
@@ -25,19 +28,19 @@ public class PresentValidator implements ConstraintValidator<TablePresent, Objec
         if (obj == null) {
             return true;
         } else if (obj instanceof Set) {
-            Set<Genre> genres = (Set<Genre>) obj;
+            Set<GenreDto> genres = (Set<GenreDto>) obj;
 
-            List<Integer> tableGenres = jdbc.queryForList("SELECT id FROM genres", Integer.class);
+            List<Integer> tableGenres = jdbc.queryForList(getGenresIdQuery, Integer.class);
             Set<Integer> genresId = genres.stream()
-                    .map(Genre::getId)
+                    .map(GenreDto::getId)
                     .filter(id -> !tableGenres.contains(id))
                     .collect(Collectors.toSet());
 
             return genresId.isEmpty();
         } else {
-            MPARating rating = (MPARating) obj;
+            MPARatingDto rating = (MPARatingDto) obj;
 
-            List<Integer> allRatings = jdbc.queryForList("SELECT id FROM mpa", Integer.class);
+            List<Integer> allRatings = jdbc.queryForList(getRatingsIdQuery, Integer.class);
             return allRatings.contains(rating.getId());
         }
     }

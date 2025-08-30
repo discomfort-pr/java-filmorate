@@ -18,4 +18,6 @@ public interface FilmStorage {
     Film addLike(Integer filmId, Integer userId);
 
     Film removeLike(Integer filmId, Integer userId);
+
+    List<Film> getMostLiked(Integer count);
 }

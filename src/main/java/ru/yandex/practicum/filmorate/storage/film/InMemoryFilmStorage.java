@@ -90,6 +90,14 @@ public class InMemoryFilmStorage implements FilmStorage {
         return liked;
     }
 
+    @Override
+    public List<Film> getMostLiked(Integer count) {
+        return findAll()
+                .stream()
+                .sorted(Comparator.comparingInt((Film film) -> film.getLikes().size()).reversed())
+                .toList();
+    }
+
     private Integer getNextId() {
         Integer maxId = films.keySet()
                 .stream()
@@ -106,11 +114,13 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     private void updateFilmData(Film updated, FilmDto filmData) {
-        updated.setName(Objects.requireNonNullElse(filmData.getName(), updated.getName()));
-        updated.setDescription(Objects.requireNonNullElse(filmData.getDescription(), updated.getDescription()));
-        updated.setReleaseDate(Objects.requireNonNullElse(filmData.getReleaseDate(), updated.getReleaseDate()));
-        updated.setDuration(Objects.requireNonNullElse(filmData.getDuration(), updated.getDuration()));
-        updated.setMpa(Objects.requireNonNullElse(filmData.getMpa(), updated.getMpa()));
-        updated.setGenres(Objects.requireNonNullElse(filmData.getGenres(), updated.getGenres()));
+        Film converted = mapper.mapToEntity(filmData);
+
+        updated.setName(Objects.requireNonNullElse(converted.getName(), updated.getName()));
+        updated.setDescription(Objects.requireNonNullElse(converted.getDescription(), updated.getDescription()));
+        updated.setReleaseDate(Objects.requireNonNullElse(converted.getReleaseDate(), updated.getReleaseDate()));
+        updated.setDuration(Objects.requireNonNullElse(converted.getDuration(), updated.getDuration()));
+        updated.setMpa(Objects.requireNonNullElse(converted.getMpa(), updated.getMpa()));
+        updated.setGenres(Objects.requireNonNullElse(converted.getGenres(), updated.getGenres()));
     }
 }

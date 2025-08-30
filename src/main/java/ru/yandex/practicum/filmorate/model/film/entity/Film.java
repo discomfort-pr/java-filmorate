@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.model.film.fields.Genre;
 import ru.yandex.practicum.filmorate.model.film.fields.MPARating;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 @Data
@@ -26,7 +27,7 @@ public class Film {
 
     MPARating mpa;
 
-    Set<Genre> genres;
+    Set<Genre> genres = new HashSet<>();
 
-    Set<Integer> likes;
+    Set<Integer> likes = new HashSet<>();
 }
