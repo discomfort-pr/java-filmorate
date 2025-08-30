@@ -5,11 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.user.entity.User;
+import ru.yandex.practicum.filmorate.model.user.entity.UserDto;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -17,44 +17,33 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UserService {
 
-    private UserStorage storage;
+    UserStorage storage;
 
-    public User addFriend(Long applicant, Long friend) {
-        User user1 = storage.findUser(applicant);
-        User user2 = storage.findUser(friend);
-
-        user1.getFriends().add(user2);
-        user2.getFriends().add(user1);
-
-        log.info("Пользователь {} добавил в друзья {}", applicant, friend);
-
-        return user1;
+    public List<User> findAll() {
+        return storage.findAll();
     }
 
-    public User removeFriend(Long applicant, Long friend) {
-        User user1 = storage.findUser(applicant);
-        User user2 = storage.findUser(friend);
-
-        user1.getFriends().remove(user2);
-        user2.getFriends().remove(user1);
-
-        log.info("Пользователь {} удалил из друзей {}", applicant, friend);
-
-        return user1;
+    public User create(UserDto userData) {
+        return storage.create(userData);
     }
 
-    public Set<User> getMutualFriends(Long applicant, Long other) {
-        Set<User> friendSet1 = storage.findUser(applicant).getFriends();
-        Set<User> friendSet2 = storage.findUser(other).getFriends();
+    public User update(UserDto userData) {
+        return storage.update(userData);
+    }
 
-        Set<User> generalSet = new HashSet<>();
+    public User addFriend(Integer applicant, Integer friend) {
+        return storage.addFriend(applicant, friend);
+    }
 
-        generalSet.addAll(friendSet1);
-        generalSet.addAll(friendSet2);
+    public User removeFriend(Integer applicant, Integer friend) {
+        return storage.removeFriend(applicant, friend);
+    }
 
-        return generalSet
-                .stream()
-                .filter(user -> friendSet1.contains(user) && friendSet2.contains(user))
-                .collect(Collectors.toSet());
+    public Set<UserDto> getFriends(Integer userId) {
+        return storage.findOne(userId).getFriends();
+    }
+
+    public Set<UserDto> getMutualFriends(Integer applicant, Integer other) {
+        return storage.getCommonFriends(applicant, other);
     }
 }

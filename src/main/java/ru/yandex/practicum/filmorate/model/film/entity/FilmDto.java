@@ -1,33 +1,29 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.model.film.entity;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.filmorate.annotation.NotBefore;
+import ru.yandex.practicum.filmorate.annotation.TablePresent;
+import ru.yandex.practicum.filmorate.model.film.fields.GenreDto;
+import ru.yandex.practicum.filmorate.model.film.fields.MPARatingDto;
 import ru.yandex.practicum.filmorate.validationgroup.CreateValidationGroup;
 import ru.yandex.practicum.filmorate.validationgroup.UpdateValidationGroup;
 
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.Set;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@AllArgsConstructor
-@NoArgsConstructor
-public class Film {
-
-    public static final LocalDate BIRTHDAY_OF_CINEMA = LocalDate.of(1895, 12, 28);
+public class FilmDto {
 
     @NotNull(groups = UpdateValidationGroup.class)
     @Positive(groups = UpdateValidationGroup.class)
-    Long id;
+    Integer id;
 
     @NotBlank(groups = CreateValidationGroup.class)
     String name;
@@ -36,6 +32,7 @@ public class Film {
     @Size(max = 200, groups = {CreateValidationGroup.class, UpdateValidationGroup.class})
     String description;
 
+    @NotNull(groups = CreateValidationGroup.class)
     @NotBefore(value = "28.12.1895", groups = {CreateValidationGroup.class, UpdateValidationGroup.class})
     LocalDate releaseDate;
 
@@ -43,5 +40,9 @@ public class Film {
     @Positive(groups = {CreateValidationGroup.class, UpdateValidationGroup.class})
     Integer duration;
 
-    Set<Long> likes = new HashSet<>();
+    @TablePresent(groups = {CreateValidationGroup.class, UpdateValidationGroup.class})
+    MPARatingDto mpa;
+
+    @TablePresent(groups = {CreateValidationGroup.class, UpdateValidationGroup.class})
+    Set<GenreDto> genres;
 }
